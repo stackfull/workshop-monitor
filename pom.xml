@@ -7,6 +7,12 @@
   <groupId>com.stackfull</groupId>
   <artifactId>workshop-monitor</artifactId>
   <version>0-SNAPSHOT</version>
+  <properties>
+    <remote.host>workshopi.local</remote.host>
+    <remote.user>paul</remote.user>
+    <remote.keyfile>${user.home}/.ssh/id_rsa</remote.keyfile>
+    <remote.dir>/home/paul/workshop-monitor</remote.dir>
+  </properties>
 
   <build>
 
@@ -14,6 +20,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
         <configuration>
           <source>8</source>
           <target>8</target>
@@ -21,6 +28,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
         <executions>
           <execution>
             <id>full-package</id>
@@ -39,6 +47,7 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+          <appendAssemblyId>false</appendAssemblyId>
         </configuration>
       </plugin>
 
@@ -79,6 +88,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
+            <version>2.8.2</version>
             <executions>
               <execution>
                 <id>default-deploy</id>
@@ -92,6 +102,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.4</version>
             <executions>
               <execution>
                 <id>scp-to-remote</id>
@@ -101,11 +112,14 @@
                 </goals>
                 <configuration>
                   <tasks>
-                    <scp localFile="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
-                         remoteToDir="paul@workshopi.local:/home/paul/workshop-monitor"
-                         keyfile="/Users/paul/.ssh/id_rsa"
-                         verbose="true" ></scp>
-
+                    <scp localFile="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                         remoteToDir="${remote.user}@${remote.host}:${remote.dir}"
+                         keyfile="${remote.keyfile}"
+                         verbose="false"/>
+                    <sshexec host="${remote.host}"
+                             username="${remote.user}"
+                             keyFile="${remote.keyfile}"
+                             command="bash -c env"/>
                   </tasks>
                 </configuration>
               </execution>
@@ -139,7 +153,7 @@
             <configuration>
               <executable>ssh</executable>
               <arguments>
-                <argument>paul@workshopi.local</argument>
+                <argument>${remote.user}@${remote.host}</argument>
                 <argument>uname -a</argument>
               </arguments>
             </configuration>
