@@ -1,0 +1,102 @@
+import org.hidetake.groovy.ssh.session.BadExitStatusException
+
+plugins {
+  id 'java'
+  id 'idea'
+  id 'org.hidetake.ssh' version '2.9.0'
+}
+
+group = 'com.stackfull'
+version = '0-SNAPSHOT'
+
+description = """A monitor for the workshop that runs on a PI.
+
+Displays important status information from the systems running in the workshop.
+"""
+
+sourceCompatibility = 8
+targetCompatibility = 8
+
+repositories {
+  maven { url "https://repo.eclipse.org/content/repositories/paho-releases/" }
+  maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+  compile group: 'org.processing', name: 'core', version:'3.3.6'
+  compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version:'1.2.0'
+}
+
+remotes {
+  main {
+    host = remoteHost
+    user = remoteUser
+    identity = file(new File(remoteKeyFile))
+  }
+}
+
+ssh.settings {
+  dryRun = project.hasProperty('dryRun')
+}
+
+
+task fatJar(type: Jar) {
+  dependsOn build
+  manifest {
+    attributes 'Implementation-Title': project.name,
+            'Implementation-Version': version,
+            'Main-Class': 'com.stackfull.workshop.monitor.Application'
+  }
+  baseName = project.name + '-all'
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+}
+
+task createServiceFiles(type: Copy) {
+  from "service"
+  into "${buildDir}/service"
+  expand serviceDescription: description,
+          remoteDir: remoteDir,
+          remoteService: remoteService,
+          remoteUser: remoteUser
+  rename 'srv', remoteService
+}
+
+// Installs service using systemd as a user service.
+// This only runs while there is a user session unless you run
+// > loginctl enable-linger username
+// which is not run by this install scheme.
+// DISPLAY needs to be set. If you have a non-standard X setup, use:
+// > systemctl --user set-environment DISPLAY=:0
+//
+task installRemoteService {
+  dependsOn createServiceFiles
+
+  doLast {
+    ssh.run {
+      session(remotes.main) {
+        execute 'mkdir -p ~/.config/systemd/user'
+        put from: files("${buildDir}/service/${remoteService}.service",
+                "${buildDir}/service/${remoteService}-restart.service" ,
+                "${buildDir}/service/${remoteService}-restart.path"), into: '.config/systemd/user'
+        execute("systemctl --user --no-pager enable ${remoteService}.service", pty: true)
+        execute("systemctl --user --no-pager enable ${remoteService}-restart.path", pty: true)
+        execute("systemctl --user --no-pager start ${remoteService}-restart.path", pty: true)
+        execute "systemctl --user --no-pager daemon-reload", pty: true
+        //execute("systemctl --user --no-pager start ${remoteService}-restart.path", pty: true)
+      }
+    }
+  }
+
+}
+
+task redeploy {
+  dependsOn fatJar
+  doLast {
+    ssh.run {
+      session(remotes.main) {
+        put from: fatJar.archivePath, into: "${remoteDir}/${remoteService}.jar"
+      }
+    }
+  }
+}

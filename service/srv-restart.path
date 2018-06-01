@@ -1,0 +1,5 @@
+[Path]
+PathChanged=${remoteDir}/${remoteService}.jar
+
+[Install]
+WantedBy=multi-user.target

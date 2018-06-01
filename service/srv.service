@@ -1,0 +1,13 @@
+[Unit]
+Description=${serviceDescription}
+After=syslog.target
+After=network.target
+
+[Service]
+WorkingDirectory=${remoteDir}
+SyslogIdentifier=${remoteService}
+ExecStart=/bin/bash -c "java -jar ${remoteDir}/${remoteService}.jar"
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
