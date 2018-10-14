@@ -1,100 +1,18 @@
 package com.stackfull.workshop.monitor;
 
-import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import processing.core.PApplet;
+import com.stackfull.workshop.monitor.mock.MockDeviceInfoSource;
+import com.stackfull.workshop.monitor.processing.Applet;
+import com.stackfull.workshop.monitor.processing.PhysicsMachine;
 
-import java.nio.charset.StandardCharsets;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-public class Application extends PApplet {
-
-    private MqttClient client;
-
-    int cx, cy;
-    float secondsRadius;
-    float minutesRadius;
-    float hoursRadius;
-    float clockDiameter;
-
-    @Override
-    public void settings() {
-        fullScreen();
-        try {
-            client = new MqttClient("tcp://workshopi.local.:1883",
-                "workshop-monitor",
-                new MemoryPersistence());
-            client.connect();
-            client.subscribe("#", (String topic, MqttMessage message) ->
-                println("new message: " + topic + " - " + message.toString()));
-        } catch (MqttException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void setup() {
-        stroke(255);
-
-        int radius = min(width, height) / 2;
-        secondsRadius = (float) (radius * 0.72);
-        minutesRadius = (float) (radius * 0.60);
-        hoursRadius = (float) (radius * 0.50);
-        clockDiameter = (float) (radius * 1.8);
-
-        cx = width / 2;
-        cy = height / 2;
-    }
-
-    @Override
-    public void draw() {
-        background(0);
-
-        // Draw the clock background
-        fill(80);
-        noStroke();
-        ellipse(cx, cy, clockDiameter, clockDiameter);
-
-        // Angles for sin() and cos() start at 3 o'clock;
-        // subtract HALF_PI to make them start at the top
-        float s = map(second(), 0, 60, 0, TWO_PI) - HALF_PI;
-        float m = map(minute() + norm(second(), 0, 60), 0, 60, 0, TWO_PI) - HALF_PI;
-        float h = map(hour() + norm(minute(), 0, 60), 0, 24, 0, TWO_PI * 2) - HALF_PI;
-
-        // Draw the hands of the clock
-        stroke(255);
-        strokeWeight(1);
-        line(cx, cy, cx + cos(s) * secondsRadius, cy + sin(s) * secondsRadius);
-        strokeWeight(2);
-        line(cx, cy, cx + cos(m) * minutesRadius, cy + sin(m) * minutesRadius);
-        strokeWeight(4);
-        line(cx, cy, cx + cos(h) * hoursRadius, cy + sin(h) * hoursRadius);
-
-        // Draw the minute ticks
-        strokeWeight(2);
-        beginShape(POINTS);
-        for (int a = 0; a < 360; a+=6) {
-            float angle = radians(a);
-            float x = cx + cos(angle) * secondsRadius;
-            float y = cy + sin(angle) * secondsRadius;
-            vertex(x, y);
-        }
-        endShape();
-    }
-
-    @Override
-    public void mouseClicked() {
-        try {
-            client.publish("/device/monitor/mouse", "clicked".getBytes(UTF_8), 2, false);
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-    }
+public class Application {
 
     public static void main(String[] args) {
         System.out.println("Starting...");
-        Application instance = new Application();
-        PApplet.runSketch(new String[]{"WorkshopMonitor"}, instance);
+        //DeviceInfoSource infoSource = new MqttDeviceInfoSource();
+        DeviceInfoSource infoSource = new MockDeviceInfoSource();
+        PhysicsMachine physicsMachine = new PhysicsMachine();
+        Applet instance = new Applet(infoSource, physicsMachine);
+        Applet.runSketch(new String[]{"WorkshopMonitor"}, instance);
     }
+
 }

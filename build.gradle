@@ -25,6 +25,9 @@ repositories {
 dependencies {
   compile group: 'org.processing', name: 'core', version:'3.3.6'
   compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version:'1.2.0'
+  compile group: 'com.google.guava', name: 'guava', version: '23.5-jre'
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.22'
+
 }
 
 remotes {

@@ -1,0 +1,1 @@
+mqttspy.publish("/device-class/dummy/device/dummy-1", '{"id": "dummy-1", "class": "dummy", "firmware": "phantom-1", "power": "online", "ip": "192.168.1.11", "mac": "ab:ab:ab:ab:ab:ab"}');
