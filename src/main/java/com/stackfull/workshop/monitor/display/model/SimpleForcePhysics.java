@@ -1,36 +1,31 @@
-package com.stackfull.workshop.monitor.processing;
+package com.stackfull.workshop.monitor.display.model;
 
 import processing.core.PVector;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PhysicsMachine {
+public class SimpleForcePhysics extends PhysicsEngine {
 
-    private float width;
-    private float height;
-
+    @Override
     public List<PVector> calcAccelerations(List<DeviceNode> nodes, Instant now) {
         return nodes.stream().map(n -> {
             PVector f = new PVector();
             nodes.forEach(m -> {
                 if (m == n) return;
-                PVector g = m.position.copy().sub(n.position);
+                PVector g = n.position.copy().sub(m.position);
                 if (m.collides(n)) {
-                    g.normalize().mult(100.0f);
+                    g.normalize().mult(10.0f);
                 } else {
-                    g.normalize().mult(1.0f / g.magSq());
+                    g.normalize();
+                    float mag = g.mag();
+                    g.mult(1.0f / (mag * mag ));
                 }
                 f.add(g);
             });
-            return f;
+            PVector friction = f.mult(-1.0f);
+            return f.add(friction);
         }).collect(Collectors.toList());
-    }
-
-    public void bounds(int width, int height) {
-        this.width = width;
-        this.height = height;
     }
 }

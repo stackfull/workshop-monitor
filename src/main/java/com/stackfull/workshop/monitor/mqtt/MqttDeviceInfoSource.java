@@ -1,7 +1,7 @@
 package com.stackfull.workshop.monitor.mqtt;
 
-import com.stackfull.workshop.monitor.DeviceInfo;
-import com.stackfull.workshop.monitor.DeviceInfoSource;
+import com.stackfull.workshop.monitor.model.DeviceInfo;
+import com.stackfull.workshop.monitor.model.DeviceInfoSource;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;

@@ -1,4 +1,4 @@
-package com.stackfull.workshop.monitor;
+package com.stackfull.workshop.monitor.model;
 
 import lombok.Builder;
 import lombok.Data;

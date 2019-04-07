@@ -1,23 +1,18 @@
-package com.stackfull.workshop.monitor.processing;
+package com.stackfull.workshop.monitor.display.view;
 
-import com.stackfull.workshop.monitor.DeviceInfo;
-import processing.core.*;
+import com.stackfull.workshop.monitor.display.model.DeviceNode;
+import processing.core.PConstants;
+import processing.core.PGraphics;
+import processing.core.PShape;
 
-import java.time.Clock;
+class NodeShape extends PShape {
 
-public class DeviceNodeFactory {
-
-    private final PFont font;
-    private final PShape cell;
-    private final Clock clock = Clock.systemDefaultZone();
-
-    public DeviceNodeFactory(PGraphics g, PFont font) {
-        this.font = font;
-        cell = g.createShape(PConstants.GROUP);
+    NodeShape(PGraphics g) {
+        super(g, PConstants.GROUP);
         g.noStroke();
         g.fill(0, 200);
         PShape background = g.createShape(PConstants.RECT, 0, 0, DeviceNode.CELL_SIZE.x, DeviceNode.CELL_SIZE.y, 5);
-        cell.addChild(background);
+        addChild(background);
         g.noFill();
         g.strokeWeight(2);
         g.stroke(100);
@@ -32,22 +27,10 @@ public class DeviceNodeFactory {
         lines.vertex(DeviceNode.CELL_SIZE.x, 6);
         lines.vertex(DeviceNode.CELL_SIZE.x, 10);
         lines.endShape();
-        cell.addChild(lines);
+        addChild(lines);
         PShape corner = g.createShape(PConstants.ARC, 5, DeviceNode.CELL_SIZE.y-5, 10, 10, PConstants.HALF_PI, PConstants.PI);
-        cell.addChild(corner);
+        addChild(corner);
         corner = g.createShape(PConstants.ARC, DeviceNode.CELL_SIZE.x-5, 5, 10, 10, PConstants.PI+ PConstants.HALF_PI, 2* PConstants.PI);
-        cell.addChild(corner);
-    }
-
-    public DeviceNode create(DeviceInfo info, float x, float y) {
-        return DeviceNode.builder()
-            .info(info)
-            .updated(clock.instant())
-            .position(new PVector(x, y))
-            .size(DeviceNode.CELL_SIZE.copy())
-            .velocity(new PVector())
-            .font(font)
-            .cell(cell)
-            .build();
+        addChild(corner);
     }
 }

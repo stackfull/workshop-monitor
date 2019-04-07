@@ -1,4 +1,4 @@
-package com.stackfull.workshop.monitor;
+package com.stackfull.workshop.monitor.model;
 
 import java.util.function.Consumer;
 

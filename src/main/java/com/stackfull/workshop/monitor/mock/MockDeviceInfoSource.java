@@ -1,7 +1,7 @@
 package com.stackfull.workshop.monitor.mock;
 
-import com.stackfull.workshop.monitor.DeviceInfo;
-import com.stackfull.workshop.monitor.DeviceInfoSource;
+import com.stackfull.workshop.monitor.model.DeviceInfo;
+import com.stackfull.workshop.monitor.model.DeviceInfoSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,11 +25,10 @@ public class MockDeviceInfoSource implements DeviceInfoSource {
 
         ExecutorService exec = Executors.newWorkStealingPool(3);
 
-        String[] names = { "1", "2", "3"};
-        //String[] names = { "4" };
-        String[] powers = { "offline", "online", "sleep", "rebooting"};
-        String[] firmware = { "v1", "v1.1", "v2dev", "v2.0"};
-        Arrays.stream(names).forEach((name) -> {
+        RandomChoice powers = new RandomChoice(new String[]{"offline", "online", "sleep", "rebooting"});
+        RandomChoice firmware = new RandomChoice(new String[]{"v1", "v1.1", "v2dev", "v2.0"});
+
+        Arrays.stream(new String[]{"1", "2", "3"}).forEach((name) -> {
             exec.submit(() -> {
                 Random rand = new Random(currentThread().getId() + currentTimeMillis());
                 while (true) {
@@ -39,10 +38,10 @@ public class MockDeviceInfoSource implements DeviceInfoSource {
                                 .id(String.format("mock-device-%s", name))
                                 .deviceClass("mock")
                                 .description("Mock device")
-                                .firmware(firmware[rand.nextInt(powers.length)])
+                                .firmware(firmware.pick())
                                 .ip(String.format("192.168.%s.%s", name, name))
                                 .mac("ab:ab:ab:ab:ab:ab:ab:ab")
-                                .power(powers[rand.nextInt(powers.length)])
+                                .power(powers.pick())
                                 .build());
                         });
                         sleep(rand.nextInt(5000) + 2000);
