@@ -15,10 +15,11 @@ public class DeviceNode {
     public static final PVector CELL_CENTRE = CELL_SIZE.copy().div(2);
 
     public DeviceInfo info;
-    public final Instant updated;
+    public Instant updated;
     public final PVector position;
-    public final PVector size;
-    public final PVector velocity;
+    @Builder.Default public final PVector size = DeviceNode.CELL_SIZE.copy();
+    @Builder.Default public final PVector velocity = new PVector();
+    @Builder.Default public final PVector acceleration = new PVector();
 
     public float left() {
         return position.x - CELL_CENTRE.x;
@@ -43,4 +44,21 @@ public class DeviceNode {
             top() < n.bottom();
     }
 
+    public void left(int i) {
+        position.x = i + CELL_CENTRE.x;
+    }
+    public void right(int i) {
+        position.x = i - CELL_CENTRE.x;
+    }
+    public void top(int i) {
+        position.x = i + CELL_CENTRE.y;
+    }
+    public void bottom (int i) {
+        position.x = i - CELL_CENTRE.y;
+    }
+
+    public void update(DeviceInfo d, Instant time) {
+        info = d;
+        updated = time;
+    }
 }

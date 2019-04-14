@@ -1,8 +1,6 @@
 package com.stackfull.workshop.monitor.display.model;
 
-import com.google.common.collect.Streams;
 import com.stackfull.workshop.monitor.model.DeviceInfo;
-import lombok.var;
 import processing.core.PVector;
 
 import java.time.Clock;
@@ -18,71 +16,61 @@ import java.util.stream.Collectors;
 
 public class Network {
 
-    private final Clock clock;
+    public final Clock clock;
     private final PhysicsEngine physics;
     private final ConcurrentMap<String, DeviceNode> nodes;
     private final Random internalRandom;
     private Instant last;
+    private float width;
+    private float height;
 
     public Network(PhysicsEngine physics, Clock clock, int width, int height) {
         this.physics = physics;
         this.clock = clock;
+        this.width = width;
+        this.height = height;
         this.nodes = new ConcurrentHashMap<>();
         this.internalRandom = new Random();
     }
 
     public void bounds(int width, int height) {
+        this.width = width;
+        this.height = height;
         physics.bounds(width, height);
     }
 
     public void update(DeviceInfo d) {
         String key = d.deviceClass + d.id;
         DeviceNode n = nodes.computeIfAbsent(key, k -> newNode(d));
-        n.info = d;
+        n.update(d, clock.instant());
         System.out.println(String.format("New node: %s", nodes.toString()));
     }
 
     public void tick() {
-        // Need a stable order
-        ArrayList<DeviceNode> nodeList = new ArrayList<>(this.nodes.values());
         Instant now = clock.instant();
+        this.nodes.entrySet().forEach(e -> {
+            if (Duration.between(e.getValue().updated, now).toMillis() > 5000.0 ) {
+                this.nodes.remove(e.getKey());
+            }
+        });
         if (last != null) {
-            float timePassed = Duration.between(last, now).toMillis() / 1000.0f;
-            var accelerations = physics.calcAccelerations(nodeList, now);
-            var velocities = updateVelocities(nodeList, accelerations, timePassed);
-            updatePositions(nodeList, timePassed);
+            physics.update(this.nodes.values(), Duration.between(last, now));
         }
         last = now;
     }
 
     private DeviceNode newNode(DeviceInfo info) {
-        float x = random(DeviceNode.CELL_CENTRE.x, physics.width - DeviceNode.CELL_CENTRE.x);
-        float y = random(DeviceNode.CELL_CENTRE.y, physics.height - DeviceNode.CELL_CENTRE.y);
+        float x = random(DeviceNode.CELL_CENTRE.x, width - DeviceNode.CELL_CENTRE.x);
+        float y = random(DeviceNode.CELL_CENTRE.y, height - DeviceNode.CELL_CENTRE.y);
         return DeviceNode.builder()
             .info(info)
             .updated(clock.instant())
             .position(new PVector(x, y))
-            .size(DeviceNode.CELL_SIZE.copy())
-            .velocity(new PVector())
             .build();
     }
 
     private float random(float start2, float stop2) {
         return start2 + (stop2 - start2) * internalRandom.nextFloat();
-    }
-
-    private List<DeviceNode> updateVelocities(List<DeviceNode> nodes, List<PVector> accelerations, float timePassed) {
-        return Streams.zip(nodes.stream(), accelerations.stream(), (node, a) -> {
-            float mass = 3.0f;
-            node.velocity.add(a.copy().mult(mass));
-            return node;
-        }).collect(Collectors.toList());
-    }
-
-    private void updatePositions(Collection<DeviceNode> nodes, float timePassed) {
-        nodes.forEach(node -> {
-            node.position.add(node.velocity.copy().mult(timePassed));
-        });
     }
 
 

@@ -23,7 +23,7 @@ public class MockDeviceInfoSource implements DeviceInfoSource {
     public void subscribe(Consumer<DeviceInfo> consumer) {
         consumers.add(consumer);
 
-        ExecutorService exec = Executors.newWorkStealingPool(3);
+        ExecutorService exec = Executors.newWorkStealingPool(4);
 
         RandomChoice powers = new RandomChoice(new String[]{"offline", "online", "sleep", "rebooting"});
         RandomChoice firmware = new RandomChoice(new String[]{"v1", "v1.1", "v2dev", "v2.0"});

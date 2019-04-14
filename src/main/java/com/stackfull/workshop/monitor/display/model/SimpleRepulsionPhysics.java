@@ -2,14 +2,14 @@ package com.stackfull.workshop.monitor.display.model;
 
 import processing.core.PVector;
 
-import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class SimpleForcePhysics extends PhysicsEngine {
+public class SimpleRepulsionPhysics extends ForceOnlyPhysics {
 
     @Override
-    public List<PVector> calcAccelerations(List<DeviceNode> nodes, Instant now) {
+    public Stream<PVector> calcForces(Collection<DeviceNode> nodes) {
         return nodes.stream().map(n -> {
             PVector f = new PVector();
             nodes.forEach(m -> {
@@ -26,6 +26,7 @@ public class SimpleForcePhysics extends PhysicsEngine {
             });
             PVector friction = f.mult(-1.0f);
             return f.add(friction);
-        }).collect(Collectors.toList());
+        });
     }
+
 }

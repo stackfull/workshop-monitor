@@ -1,19 +1,12 @@
 package com.stackfull.workshop.monitor.display.model;
 
-import processing.core.PVector;
-
-import java.time.Instant;
+import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 
-public abstract class PhysicsEngine {
+public interface PhysicsEngine {
 
-    float width;
-    float height;
+    void update(Collection<DeviceNode> nodes, Duration timePassed);
 
-    abstract public List<PVector> calcAccelerations(List<DeviceNode> nodes, Instant now);
-
-    void bounds(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
+    void bounds(int width, int height);
 }

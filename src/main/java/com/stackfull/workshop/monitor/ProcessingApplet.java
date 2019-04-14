@@ -1,8 +1,6 @@
 package com.stackfull.workshop.monitor;
 
-import com.stackfull.workshop.monitor.display.model.Network;
-import com.stackfull.workshop.monitor.display.model.PhysicsEngine;
-import com.stackfull.workshop.monitor.display.model.SimpleForcePhysics;
+import com.stackfull.workshop.monitor.display.model.*;
 import com.stackfull.workshop.monitor.display.view.BasicNetworkView;
 import com.stackfull.workshop.monitor.mock.MockDeviceInfoSource;
 import com.stackfull.workshop.monitor.model.DeviceInfoSource;
@@ -22,7 +20,8 @@ public class ProcessingApplet extends PApplet {
         System.out.println("Starting...");
         //DeviceInfoSource infoSource = new MqttDeviceInfoSource();
         DeviceInfoSource infoSource = new MockDeviceInfoSource();
-        PhysicsEngine physics = new SimpleForcePhysics();
+        //PhysicsEngine physics = new SimpleInvSquareForcePhysics();
+        PhysicsEngine physics = new JustVelocityPhysics();
         Clock clock = Clock.systemDefaultZone();
         Network model = new Network(physics, clock, 320, 280);
         ProcessingApplet instance = new ProcessingApplet(infoSource, model);
